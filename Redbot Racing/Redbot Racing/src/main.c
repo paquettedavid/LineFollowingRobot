@@ -23,7 +23,7 @@ volatile float INITIAL_CONTROLLER_OFFSET = 0.0;
 #define Right_Mode_1 7
 
 #define Left_Mode_2 4
-#define Right_Mode_2 8
+#define Right_Mode_2 0
 
 #define Motor_DDR DDRD
 #define Motor_Bank PORTD
@@ -200,10 +200,7 @@ int main(void)
 {
 	inits();
 	initMotors();
-	while(1)
-	{
-
-	}
+	while(1);
 
 	return 0;
 }
