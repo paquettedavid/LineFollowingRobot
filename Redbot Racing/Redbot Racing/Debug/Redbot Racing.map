@@ -154,18 +154,18 @@ Discarded input sections
  .text.stopMotors
                 0x00000000       0x18 src/main.o
  .text.initMotors
-                0x00000000       0x2a src/main.o
+                0x00000000       0x2e src/main.o
  .text.motorForward
-                0x00000000        0xa src/main.o
+                0x00000000        0xe src/main.o
  .text.leftBrake
                 0x00000000       0x10 src/main.o
  .text.rightBrake
-                0x00000000       0x10 src/main.o
+                0x00000000        0xc src/main.o
  .text.leftReverse
                 0x00000000        0x6 src/main.o
  .text.rightReverse
-                0x00000000        0x6 src/main.o
- .text.Reverse  0x00000000        0xe src/main.o
+                0x00000000        0x8 src/main.o
+ .text.Reverse  0x00000000        0xa src/main.o
  .debug_macro   0x00000000      0xa4e src/main.o
  .debug_macro   0x00000000       0x10 src/main.o
  .debug_macro   0x00000000      0x1ad src/main.o
@@ -764,12 +764,12 @@ END GROUP
  .debug_frame   0x00000000       0xd4 src/PIDController.o
  .debug_frame   0x000000d4      0x26c src/main.o
 
-.debug_str      0x00000000     0x7330
+.debug_str      0x00000000     0x7338
  *(.debug_str)
  .debug_str     0x00000000     0x2cb4 src/PIDController.o
                                0x2cba (size before relaxing)
- .debug_str     0x00002cb4     0x467c src/main.o
-                               0x73d4 (size before relaxing)
+ .debug_str     0x00002cb4     0x4684 src/main.o
+                               0x73dc (size before relaxing)
 
 .debug_loc      0x00000000      0x7e0
  *(.debug_loc)
@@ -799,15 +799,15 @@ END GROUP
  .debug_ranges  0x00000000       0x18 src/PIDController.o
  .debug_ranges  0x00000018       0xa0 src/main.o
 
-.debug_macro    0x00000000      0xda6
+.debug_macro    0x00000000      0xdb2
  *(.debug_macro)
  .debug_macro   0x00000000       0x1b src/PIDController.o
  .debug_macro   0x0000001b      0xa4e src/PIDController.o
- .debug_macro   0x00000a69       0xf0 src/main.o
- .debug_macro   0x00000b59       0x63 src/main.o
- .debug_macro   0x00000bbc       0x58 src/main.o
- .debug_macro   0x00000c14       0x10 src/main.o
- .debug_macro   0x00000c24       0x97 src/main.o
- .debug_macro   0x00000cbb       0xeb src/main.o
+ .debug_macro   0x00000a69       0xfc src/main.o
+ .debug_macro   0x00000b65       0x63 src/main.o
+ .debug_macro   0x00000bc8       0x58 src/main.o
+ .debug_macro   0x00000c20       0x10 src/main.o
+ .debug_macro   0x00000c30       0x97 src/main.o
+ .debug_macro   0x00000cc7       0xeb src/main.o
 OUTPUT(Redbot Racing.elf elf32-avr)
 LOAD linker stubs

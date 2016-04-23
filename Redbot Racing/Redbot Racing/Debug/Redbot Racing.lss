@@ -23,13 +23,13 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING
   9 .debug_frame  00000340  00000000  00000000  00001bac  2**2
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_str    00007330  00000000  00000000  00001eec  2**0
+ 10 .debug_str    00007338  00000000  00000000  00001eec  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_loc    000007e0  00000000  00000000  0000921c  2**0
+ 11 .debug_loc    000007e0  00000000  00000000  00009224  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_ranges 000000b8  00000000  00000000  000099fc  2**0
+ 12 .debug_ranges 000000b8  00000000  00000000  00009a04  2**0
                   CONTENTS, READONLY, DEBUGGING
- 13 .debug_macro  00000da6  00000000  00000000  00009ab4  2**0
+ 13 .debug_macro  00000db2  00000000  00000000  00009abc  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -512,8 +512,8 @@ void PIDControllerComputeOutput(PIDController *controller, float processVariable
 void Reverse()
 {
 	//put both motors in reverse mode but keep speed the same for now
-	PORTD &= ~((1<<Left_Mode_1)|(1<<Right_Mode_1));
-	PORTD |= (1<<Left_Mode_2)|(1<<Right_Mode_2);
+	Motor_Bank &= ~((1<<Left_Mode_1)|(1<<Right_Mode_1));
+	Motor_Bank |= (1<<Left_Mode_2)|(1<<Right_Mode_2);
  344:	80 91 78 00 	lds	r24, 0x0078
  348:	80 91 79 00 	lds	r24, 0x0079
  34c:	ea e7       	ldi	r30, 0x7A	; 122
@@ -668,7 +668,7 @@ void Reverse()
  484:	0f be       	out	0x3f, r0	; 63
  486:	cd bf       	out	0x3d, r28	; 61
  488:	8a b1       	in	r24, 0x0a	; 10
- 48a:	8e 67       	ori	r24, 0x7E	; 126
+ 48a:	84 6f       	ori	r24, 0xF4	; 244
  48c:	8a b9       	out	0x0a, r24	; 10
  48e:	84 b5       	in	r24, 0x24	; 36
  490:	8b 62       	ori	r24, 0x2B	; 43
@@ -824,7 +824,7 @@ void Reverse()
  60e:	80 91 22 01 	lds	r24, 0x0122
  612:	90 91 23 01 	lds	r25, 0x0123
  616:	88 bd       	out	0x28, r24	; 40
- 618:	5e 9a       	sbi	0x0b, 6	; 11
+ 618:	5d 9a       	sbi	0x0b, 5	; 11
  61a:	9f 91       	pop	r25
  61c:	8f 91       	pop	r24
  61e:	0f 90       	pop	r0
@@ -839,7 +839,7 @@ void Reverse()
  62c:	0f b6       	in	r0, 0x3f	; 63
  62e:	0f 92       	push	r0
  630:	11 24       	eor	r1, r1
- 632:	5e 98       	cbi	0x0b, 6	; 11
+ 632:	5d 98       	cbi	0x0b, 5	; 11
  634:	0f 90       	pop	r0
  636:	0f be       	out	0x3f, r0	; 63
  638:	0f 90       	pop	r0
@@ -857,7 +857,7 @@ void Reverse()
  64c:	80 91 20 01 	lds	r24, 0x0120
  650:	90 91 21 01 	lds	r25, 0x0121
  654:	80 93 b4 00 	sts	0x00B4, r24
- 658:	5d 9a       	sbi	0x0b, 5	; 11
+ 658:	5e 9a       	sbi	0x0b, 6	; 11
  65a:	9f 91       	pop	r25
  65c:	8f 91       	pop	r24
  65e:	0f 90       	pop	r0
@@ -872,7 +872,7 @@ void Reverse()
  66c:	0f b6       	in	r0, 0x3f	; 63
  66e:	0f 92       	push	r0
  670:	11 24       	eor	r1, r1
- 672:	5d 98       	cbi	0x0b, 5	; 11
+ 672:	5e 98       	cbi	0x0b, 6	; 11
  674:	0f 90       	pop	r0
  676:	0f be       	out	0x3f, r0	; 63
  678:	0f 90       	pop	r0
