@@ -109,7 +109,7 @@ ISR(TIMER0_COMPA_vect)
 	Motor_Bank |= (1<<Left_PWM);
 }
 
-ISR(TIMER1_COMPB_vect)
+ISR(TIMER0_COMPB_vect)
 {
 	Motor_Bank &= ~(1<<Left_PWM);
 }
