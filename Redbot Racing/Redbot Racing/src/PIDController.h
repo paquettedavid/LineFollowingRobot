@@ -16,7 +16,7 @@ typedef struct PIDController {
 } PIDController;
 
 PIDController PIDControllerCreate(float processVariableSetPoint, float controllerGain,
-        float integralTime, float derivativeTime float minControllerOutput, float maxControllerOutput, float samplingPeriod, float initialControllerOffset);
+        float integralTime, float derivativeTime, float minControllerOutput, float maxControllerOutput, float samplingPeriod, float initialControllerOffset);
 
 void PIDControllerComputeOutput(PIDController *controller, float processVariable);
 
