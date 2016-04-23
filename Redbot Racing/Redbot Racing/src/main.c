@@ -27,6 +27,8 @@ volatile float INITIAL_CONTROLLER_OFFSET = 0.0;
 
 #define Motor_DDR DDRD
 #define Motor_Bank PORTD
+#define Motor_DDR2 DDRB
+#define Motor_Bank2 PORTB
 
 volatile uint16_t Left_time_period = 2;
 volatile uint16_t Left_duty_cycle = 0;
@@ -41,32 +43,31 @@ void initADC();
 void inits(void)
 {
 		//Set up Data Direction Registers
-		Motor_DDR |= (1<<Left_PWM)|(1<<Right_PWM)|(1<<Left_Mode_1)|(1<<Right_Mode_1)|(1<<Left_Mode_2)|(1<<Right_Mode_2);
-	
+		Motor_DDR |= (1<<Left_PWM)|(1<<Right_PWM)|(1<<Left_Mode_1)|(1<<Right_Mode_1)|(1<<Left_Mode_2);
+		Motor_DDR2 |=(1<<Right_Mode_2);
 		//Set up Timer 0 for PWM at about 50kHz
 		TCCR0A |= (1<<WGM01)|(1<<WGM00)|(1<<WGM02)|(1<<COM0B1);	//Fast PWM Mode
 		OCR0A = Left_time_period;		//set frequency to 50kHz
 		OCR0B = Left_duty_cycle;		//D=0 at start for calibration
 		TIMSK0 |= (1<<OCIE0A)|(1<<OCIE0B);
 		TCCR0B = 5; //1024 prescalar
-		
+
 		//Set up Timer 2 for PWM at about 50kHz
 		TCCR2A |= (1<<WGM21)|(1<<WGM20)|(1<<WGM22)|(1<<COM2B1);	//Fast PWM Mode
 		OCR2A = Right_time_period;		//set frequency to 50kHz
 		OCR2B = Right_duty_cycle;		//D = 0 at start for calibration
 		TIMSK2 |= (1<<OCIE2A)|(1<<OCIE2B);
 		TCCR2B = 5; //1024 prescalar
-		
+
 		InitTimer1();
 		initADC();
-		DDRD = 0b00100111;
 		motorRatioController = PIDControllerCreate(motorControllerSetpoint,
 		CONTROLLER_GAIN, CONTROLLER_INTEGRAL_TIME, CONTROLLER_DERIVATIVE_TIME,
 		CONTROLLER_MIN_OUTPUT,CONTROLLER_MAX_OUTPUT, CONTROLLER_SAMPLING_PERIOD,
 		INITIAL_CONTROLLER_OFFSET);
-		
+
 		sei();
-		
+
 
 }
 
@@ -137,28 +138,29 @@ void setSpeeds(float error)
 		Left_duty_cycle = ((90+error)/90) *Left_time_period;
 		Right_duty_cycle = (-1*error/90)*Right_time_period;
 	}
-	
+
 }
 
 void stopMotors()
 {
-	Motor_Bank &= ~((1<<Left_Mode_1)|(1<<Left_Mode_2)|(Right_Mode_1)|(Right_Mode_2));	//put both motors in stop mode
+	Motor_Bank &= ~((1<<Left_Mode_1)|(1<<Left_Mode_2)|(1<<Right_Mode_1));	//put both motors in stop mode
+	Motor_Bank2 &= ~(1<<Right_Mode_2);
 	Left_duty_cycle = 0;
 	Right_duty_cycle = 0;
 }
 
-void initMotors()
-{
-	Motor_Bank |= (1<<Left_Mode_1)|(Right_Mode_1);	//put both motors in forward mode
-	Motor_Bank &= ~((1<<Left_Mode_2)|(Right_Mode_2));	//put both motors in forward mode
-	Left_duty_cycle = Left_time_period;
-	Right_duty_cycle = Right_time_period;		//MAX SPEED
-}
-
 void motorForward()
 {
-	Motor_Bank |= (1<<Left_Mode_1)|(Right_Mode_1);	//put both motors in forward mode
-	Motor_Bank &= ~((1<<Left_Mode_2)|(Right_Mode_2));	//put both motors in forward mode
+	Motor_Bank |= (1<<Left_Mode_1)|(1<<Right_Mode_1);	//put both motors in forward mode
+	Motor_Bank &= ~(1<<Left_Mode_2);	//put both motors in forward mode
+	Motor_Bank2 &= ~(1<<Right_Mode_2);
+}
+
+void initMotors()
+{
+	motorForward();
+	Left_duty_cycle = Left_time_period;
+	Right_duty_cycle = Right_time_period;		//MAX SPEED
 }
 
 void leftBrake()
@@ -197,10 +199,11 @@ void Reverse()
 int main(void)
 {
 	inits();
+	initMotors();
 	while(1)
 	{
-		
+
 	}
-	
+
 	return 0;
 }
