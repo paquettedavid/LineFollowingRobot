@@ -8,9 +8,9 @@ PIDController motorRatioController;
 
 volatile int controllerTimer = 0.0;
 volatile float motorControllerSetpoint = 450.0;
-volatile float CONTROLLER_GAIN = 0.09;
-volatile float CONTROLLER_INTEGRAL_TIME = 1; //seconds
-volatile float CONTROLLER_DERIVATIVE_TIME = 0; //seconds
+volatile float CONTROLLER_GAIN = 0.15;
+volatile float CONTROLLER_INTEGRAL_TIME = 0;//0.15; //seconds
+volatile float CONTROLLER_DERIVATIVE_TIME = -0.9; //seconds
 volatile float CONTROLLER_MIN_OUTPUT = -90.0;
 volatile float CONTROLLER_MAX_OUTPUT = 90.0;
 volatile float CONTROLLER_SAMPLING_PERIOD = 0.001;
@@ -111,11 +111,11 @@ ISR (TIMER1_COMPB_vect)
 }
 
 void setLeftMotorDutyCycle(float dutyCycle){
-	Left_duty_cycle = (int)((float)(Left_time_period*0.6)*(dutyCycle/100.0));
+	Left_duty_cycle = (int)((float)(Left_time_period)*(dutyCycle/100.0));
 }
 
 void setRightMotorDutyCycle(float dutyCycle){
-	Right_duty_cycle = (int)((304.0*0.6)*(dutyCycle/100.0));
+	Right_duty_cycle = (int)((304.0)*(dutyCycle/100.0));
 }
 
 void setSpeeds(float error)
