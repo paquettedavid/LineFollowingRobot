@@ -24,8 +24,8 @@ void PIDControllerComputeOutput(PIDController *controller, float processVariable
     //compute integral component
     controller->errorIntegral = (1 / controller->integralTime) * controller->samplingPeriod * controller->error + controller->errorIntegral;
     //wind up protection
-    controller->errorIntegral = controller->errorIntegral < controller->minControllerOutput ? controller->minControllerOutput : controller->errorIntegral;
-    controller->errorIntegral = controller->errorIntegral > controller->maxControllerOutput ? controller->maxControllerOutput : controller->errorIntegral;
+    controller->errorIntegral = controller->errorIntegral < controller->minControllerOutput*1000 ? controller->minControllerOutput*1000 : controller->errorIntegral;
+    controller->errorIntegral = controller->errorIntegral > controller->maxControllerOutput*1000 ? controller->maxControllerOutput*1000 : controller->errorIntegral;
     //compute derivative term
     float derivativeComponent = (controller->derivativeTime*(controller->previousError - controller->error))/controller->samplingPeriod;
     //compute controller output Kc*(e+Ts/Ti*int(e)+Td*d(e)/Ts)

@@ -3,14 +3,14 @@
 #include <avr/io.h> /* Defines pins, ports etc. */
 #include <stdio.h>
 #include "PIDController.h"
-
+#include "Arduino.h"
 PIDController motorRatioController;
 
 volatile int controllerTimer = 0.0;
-volatile float motorControllerSetpoint = 230.0;
-volatile float CONTROLLER_GAIN = 1.0;
-volatile float CONTROLLER_INTEGRAL_TIME = 1.0; //seconds
-volatile float CONTROLLER_DERIVATIVE_TIME = 1.0; //seconds
+volatile float motorControllerSetpoint = 450.0;
+volatile float CONTROLLER_GAIN = 0.05;
+volatile float CONTROLLER_INTEGRAL_TIME = 1; //seconds
+volatile float CONTROLLER_DERIVATIVE_TIME = 0; //seconds
 volatile float CONTROLLER_MIN_OUTPUT = -90.0;
 volatile float CONTROLLER_MAX_OUTPUT = 90.0;
 volatile float CONTROLLER_SAMPLING_PERIOD = 0.001;
@@ -29,16 +29,17 @@ volatile float INITIAL_CONTROLLER_OFFSET = 0.0;
 #define Motor_Bank PORTD
 #define Motor_DDR2 DDRB
 #define Motor_Bank2 PORTB
-
+// straigt values : L = 150 R = 159
 volatile uint16_t Left_time_period = 2;
-volatile uint16_t Left_duty_cycle = 0;
+volatile uint16_t Left_duty_cycle = 80; // 255 max
 
 volatile uint16_t Right_time_period = 319;
-volatile uint16_t Right_duty_cycle = 317;	//0-317 (Highest Duty Ratio)
+volatile uint16_t Right_duty_cycle = 120;	//0-317 (Highest Duty Ratio)
 
 
 void InitTimer1();
 void initADC();
+void setSpeeds(float error);
 
 void inits(void)
 {
@@ -48,7 +49,7 @@ void inits(void)
 
 		//Set up Timer 0 for PWM at about 50kHz
 		TCCR0A |= (1<<WGM01)|(1<<WGM00)|(1<<COM0B1);//Fast PWM Mode
-		OCR0B = 254; //Duty ratio currently at max value 0-255
+		OCR0B = Left_duty_cycle; //Duty ratio currently at max value 0-255
 		TIMSK0 |= (1<<OCIE0B);
 		TCCR0B |= (1<<CS00);//prescalar of 1
 
@@ -65,14 +66,12 @@ void inits(void)
 		OCR2A = 249;
 		TIMSK2 |= (1<<OCIE2A);
 		TCCR2B |= (1<<CS22);  //64 prescalar */
-/*
-		InitTimer1();
+		Serial.begin(9600);
 		initADC();
 		motorRatioController = PIDControllerCreate(motorControllerSetpoint,
 		CONTROLLER_GAIN, CONTROLLER_INTEGRAL_TIME, CONTROLLER_DERIVATIVE_TIME,
 		CONTROLLER_MIN_OUTPUT,CONTROLLER_MAX_OUTPUT, CONTROLLER_SAMPLING_PERIOD,
 		INITIAL_CONTROLLER_OFFSET);
-*/
 		sei();
 
 
@@ -83,40 +82,34 @@ float readAnalogVoltage(){
 	adcIn |= ( ADCH << 8 );
 	ADCSRA |= (1 << ADSC);
 	while((ADCSRA & (1<<ADSC)));
-	float voltage = ((1.0*(float)adcIn) / 1024.0) * 5.0;
+	//Serial.println(adcIn);
+	//float voltage = ((1.0*(float)adcIn) / 1024.0) * 5.0;
+	return adcIn;
 }
 
 ISR(TIMER2_COMPA_vect) {
 	controllerTimer++;
 	if(controllerTimer > motorRatioController.samplingPeriod * 1000){
 		PIDControllerComputeOutput(&motorRatioController, readAnalogVoltage());
+		Serial.println(motorRatioController.controllerOutput);
+		setSpeeds(motorRatioController.controllerOutput);
 		controllerTimer = 0;
 	}
 }
 
 void initADC(){
 	//init the A to D converter
-	ADMUX = 0b00000110;
-	ADMUX |= (1<<MUX2)|(1<<MUX1);
-	ADCSRA = (1<<ADEN) | (1<<ADPS2) | (1<<ADPS1) | (ADPS0);
+	ADMUX |= (1<<MUX1)|(1<<MUX2) |(1<< REFS0);
+	ADCSRA = (1<<ADEN) | (1<<ADPS2) | (1<<ADPS1) | (1<<ADPS0);
 }
-
-// 1ms ISR for Timer 1 assuming F_CPU = 16MHz
-void InitTimer1(void) {
-	TCCR1A |= (1<<COM1A1);
-	OCR1A = 249;
-	TIMSK1 |= (1<<OCIE1A);
-	TCCR1B |= (1 << WGM12)|(1<<CS11)|(1<<CS10);
-}
-
 
 ISR(TIMER0_COMPB_vect)
 {
-	//OCR0B = Left_duty_cycle;
+	OCR0B = Left_duty_cycle;
 }
 ISR (TIMER1_COMPA_vect)
 {
-	//OCR2B = Right_duty_cycle;
+	OCR2B = Right_duty_cycle;
 	Motor_Bank |= (1<<Right_PWM);
 }
 
@@ -130,13 +123,13 @@ void setSpeeds(float error)
 	//assuming error -90 to 90 degrees
 	if(error>0)
 	{
-		Left_duty_cycle =  (error/90)*Left_time_period;
-		Right_duty_cycle = (((90-error))/90) *Right_time_period;
+		Left_duty_cycle =  (error/90) * 80;
+		Right_duty_cycle = (((90-error))/90) * 75;//Right_time_period;
 	}
 	else if (error<0)
 	{
-		Left_duty_cycle = ((90+error)/90) *Left_time_period;
-		Right_duty_cycle = (-1*error/90)*Right_time_period;
+		Left_duty_cycle = ((90+error)/90) * 80;
+		Right_duty_cycle = (-1*error/90) * 75;//Right_time_period;
 	}
 
 }
@@ -197,7 +190,7 @@ void leftReverse()
 void rightReverse()
 {
 	Motor_Bank &= ~((1<<Right_Mode_1));
-	Motor_Bank |= (1<<Right_Mode_2);		//put right motor in reverse mode
+	Motor_Bank2 |= (1<<Right_Mode_2);		//put right motor in reverse mode
 	//keep right PWM the same
 }
 
@@ -211,7 +204,8 @@ void Reverse()
 int main(void)
 {
 	inits();
-	initMotors();
+	leftForward();
+	rightReverse();
 	while(1);
 
 	return 0;
