@@ -33,8 +33,8 @@ volatile float INITIAL_CONTROLLER_OFFSET = 0.0;
 volatile uint16_t Left_time_period = 2;
 volatile uint16_t Left_duty_cycle = 0;
 
-volatile uint16_t Right_time_period = 2;
-volatile uint16_t Right_duty_cycle = 0;
+volatile uint16_t Right_time_period = 319;
+volatile uint16_t Right_duty_cycle = 317;	//0-317 (Highest Duty Ratio)
 
 
 void InitTimer1();
@@ -45,27 +45,34 @@ void inits(void)
 		//Set up Data Direction Registers
 		Motor_DDR |= (1<<Left_PWM)|(1<<Right_PWM)|(1<<Left_Mode_1)|(1<<Right_Mode_1)|(1<<Left_Mode_2);
 		Motor_DDR2 |=(1<<Right_Mode_2);
+		
 		//Set up Timer 0 for PWM at about 50kHz
-		TCCR0A |= (1<<WGM01)|(1<<WGM00)|(1<<WGM02)|(1<<COM0B1);	//Fast PWM Mode
-		OCR0A = Left_time_period;		//set frequency to 50kHz
-		OCR0B = Left_duty_cycle;		//D=0 at start for calibration
-		TIMSK0 |= (1<<OCIE0A)|(1<<OCIE0B);
-		TCCR0B = 5; //1024 prescalar
+		TCCR0A |= (1<<WGM01)|(1<<WGM00)|(1<<COM0B1);//Fast PWM Mode
+		OCR0B = 15; //Duty ratio currently at max value 0-255
+		TIMSK0 |= (1<<OCIE0B);
+		TCCR0B |= (1<<CS00);//prescalar of 1
+		
+		//Set up Timer 1 for Right Motor PWM
+		TCCR1A |= (1<<WGM10)|(1<<WGM11);		//Fast PWM
+		TCCR1B |= ((1<<WGM12)|(1<<WGM13)|(1<<CS10));		// Prescalar = 1
+		TIMSK1 |= ((1<<OCIE1B)|(1<<OCIE1A));
+		OCR1A = Right_time_period;
+		OCR1B = Right_duty_cycle;
 
-		//Set up Timer 2 for PWM at about 50kHz
-		TCCR2A |= (1<<WGM21)|(1<<WGM20)|(1<<WGM22)|(1<<COM2B1);	//Fast PWM Mode
-		OCR2A = Right_time_period;		//set frequency to 50kHz
-		OCR2B = Right_duty_cycle;		//D = 0 at start for calibration
-		TIMSK2 |= (1<<OCIE2A)|(1<<OCIE2B);
-		TCCR2B = 5; //1024 prescalar
-
+		
+		//Set up Timer 2 as a 1ms clock
+		TCCR2A |= (1<<WGM21);	//CTC Mode
+		OCR2A = 249;		
+		TIMSK2 |= (1<<OCIE2A);
+		TCCR2B |= (1<<CS22);  //64 prescalar */
+/*
 		InitTimer1();
 		initADC();
 		motorRatioController = PIDControllerCreate(motorControllerSetpoint,
 		CONTROLLER_GAIN, CONTROLLER_INTEGRAL_TIME, CONTROLLER_DERIVATIVE_TIME,
 		CONTROLLER_MIN_OUTPUT,CONTROLLER_MAX_OUTPUT, CONTROLLER_SAMPLING_PERIOD,
 		INITIAL_CONTROLLER_OFFSET);
-
+*/
 		sei();
 
 
@@ -79,7 +86,7 @@ float readAnalogVoltage(){
 	float voltage = ((1.0*(float)adcIn) / 1024.0) * 5.0;
 }
 
-ISR(TIMER1_COMPA_vect) {
+ISR(TIMER2_COMPA_vect) {
 	controllerTimer++;
 	if(controllerTimer > motorRatioController.samplingPeriod * 1000){
 		PIDControllerComputeOutput(&motorRatioController, readAnalogVoltage());
@@ -103,24 +110,17 @@ void InitTimer1(void) {
 }
 
 
-ISR(TIMER0_COMPA_vect)
-{
-	OCR0B = Left_duty_cycle;
-	Motor_Bank |= (1<<Left_PWM);
-}
-
 ISR(TIMER0_COMPB_vect)
 {
-	Motor_Bank &= ~(1<<Left_PWM);
+	//OCR0B = Left_duty_cycle;
 }
-
-ISR (TIMER2_COMPA_vect)
+ISR (TIMER1_COMPA_vect)
 {
-	OCR2B = Right_duty_cycle;
+	//OCR2B = Right_duty_cycle;
 	Motor_Bank |= (1<<Right_PWM);
 }
 
-ISR (TIMER2_COMPB_vect)
+ISR (TIMER1_COMPB_vect)
 {
 	Motor_Bank &= ~(1<<Right_PWM);
 }
@@ -158,9 +158,9 @@ void motorForward()
 
 void initMotors()
 {
-	motorForward();
-	Left_duty_cycle = Left_time_period;
-	Right_duty_cycle = Right_time_period;		//MAX SPEED
+	//motorForward();
+	Left_duty_cycle = 0;//Left_time_period/5;
+	Right_duty_cycle = 0;//Right_time_period/5;		//MAX SPEED
 }
 
 void leftBrake()
