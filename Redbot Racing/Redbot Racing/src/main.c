@@ -48,7 +48,7 @@ void inits(void)
 
 		//Set up Timer 0 for PWM at about 50kHz
 		TCCR0A |= (1<<WGM01)|(1<<WGM00)|(1<<COM0B1);//Fast PWM Mode
-		OCR0B = 15; //Duty ratio currently at max value 0-255
+		OCR0B = 254; //Duty ratio currently at max value 0-255
 		TIMSK0 |= (1<<OCIE0B);
 		TCCR0B |= (1<<CS00);//prescalar of 1
 
