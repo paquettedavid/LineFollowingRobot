@@ -8,8 +8,8 @@ PIDController motorRatioController;
 
 volatile int controllerTimer = 0.0;
 volatile float motorControllerSetpoint = 450.0;
-volatile float CONTROLLER_GAIN = 0.05;
-volatile float CONTROLLER_INTEGRAL_TIME = 0; //seconds
+volatile float CONTROLLER_GAIN = 0.09;
+volatile float CONTROLLER_INTEGRAL_TIME = 1; //seconds
 volatile float CONTROLLER_DERIVATIVE_TIME = 0; //seconds
 volatile float CONTROLLER_MIN_OUTPUT = -90.0;
 volatile float CONTROLLER_MAX_OUTPUT = 90.0;
