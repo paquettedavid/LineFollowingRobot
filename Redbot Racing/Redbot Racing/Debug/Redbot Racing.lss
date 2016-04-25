@@ -610,10 +610,10 @@ void Reverse()
 
 0000042c <motorForward>:
  42c:	8b b1       	in	r24, 0x0b	; 11
- 42e:	85 60       	ori	r24, 0x05	; 5
+ 42e:	80 69       	ori	r24, 0x90	; 144
  430:	8b b9       	out	0x0b, r24	; 11
- 432:	5c 98       	cbi	0x0b, 4	; 11
- 434:	2f 98       	cbi	0x05, 7	; 5
+ 432:	5a 98       	cbi	0x0b, 2	; 11
+ 434:	28 98       	cbi	0x05, 0	; 5
  436:	08 95       	ret
 
 00000438 <initMotors>:
