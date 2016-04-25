@@ -158,6 +158,10 @@ Discarded input sections
                 0x00000000      0x166 src/main.o
  .text.stopMotors
                 0x00000000       0x1a src/main.o
+ .text.rightForward
+                0x00000000        0x6 src/main.o
+ .text.leftForward
+                0x00000000        0x6 src/main.o
  .text.leftBrake
                 0x00000000       0x10 src/main.o
  .text.rightBrake
@@ -722,42 +726,42 @@ END GROUP
 .debug_sfnames
  *(.debug_sfnames)
 
-.debug_aranges  0x00000000       0xd0
+.debug_aranges  0x00000000       0xe0
  *(.debug_aranges)
  .debug_aranges
                 0x00000000       0x28 src/PIDController.o
  .debug_aranges
-                0x00000028       0xa8 src/main.o
+                0x00000028       0xb8 src/main.o
 
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000      0x64a
+.debug_info     0x00000000      0x674
  *(.debug_info .gnu.linkonce.wi.*)
  .debug_info    0x00000000      0x1e0 src/PIDController.o
- .debug_info    0x000001e0      0x46a src/main.o
+ .debug_info    0x000001e0      0x494 src/main.o
 
 .debug_abbrev   0x00000000      0x23c
  *(.debug_abbrev)
  .debug_abbrev  0x00000000       0xbb src/PIDController.o
  .debug_abbrev  0x000000bb      0x181 src/main.o
 
-.debug_line     0x00000000      0x62a
+.debug_line     0x00000000      0x664
  *(.debug_line .debug_line.* .debug_line_end)
  .debug_line    0x00000000       0xff src/PIDController.o
- .debug_line    0x000000ff      0x52b src/main.o
+ .debug_line    0x000000ff      0x565 src/main.o
 
-.debug_frame    0x00000000      0x2bc
+.debug_frame    0x00000000      0x2dc
  *(.debug_frame)
  .debug_frame   0x00000000       0xd4 src/PIDController.o
- .debug_frame   0x000000d4      0x1e8 src/main.o
+ .debug_frame   0x000000d4      0x208 src/main.o
 
-.debug_str      0x00000000     0x734f
+.debug_str      0x00000000     0x7368
  *(.debug_str)
  .debug_str     0x00000000     0x2cb4 src/PIDController.o
                                0x2cba (size before relaxing)
- .debug_str     0x00002cb4     0x469b src/main.o
-                               0x73df (size before relaxing)
+ .debug_str     0x00002cb4     0x46b4 src/main.o
+                               0x73f8 (size before relaxing)
 
 .debug_loc      0x00000000      0x67f
  *(.debug_loc)
@@ -782,10 +786,10 @@ END GROUP
 .debug_pubtypes
  *(.debug_pubtypes)
 
-.debug_ranges   0x00000000       0xb0
+.debug_ranges   0x00000000       0xc0
  *(.debug_ranges)
  .debug_ranges  0x00000000       0x18 src/PIDController.o
- .debug_ranges  0x00000018       0x98 src/main.o
+ .debug_ranges  0x00000018       0xa8 src/main.o
 
 .debug_macro    0x00000000      0xdbe
  *(.debug_macro)

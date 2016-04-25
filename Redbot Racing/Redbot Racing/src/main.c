@@ -156,6 +156,18 @@ void motorForward()
 	Motor_Bank2 &= ~(1<<Right_Mode_2);
 }
 
+void rightForward()
+{
+	Motor_Bank |= (1<<Right_Mode_1);
+	Motor_Bank2 &= ~(1<<Right_Mode_2);
+}
+
+void leftForward()
+{
+	Motor_Bank |= (1<<Left_Mode_1);
+	Motor_Bank &= ~(1<<Left_Mode_2);
+}
+
 void initMotors()
 {
 	motorForward();
