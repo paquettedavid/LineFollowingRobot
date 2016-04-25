@@ -45,13 +45,13 @@ void inits(void)
 		//Set up Data Direction Registers
 		Motor_DDR |= (1<<Left_PWM)|(1<<Right_PWM)|(1<<Left_Mode_1)|(1<<Right_Mode_1)|(1<<Left_Mode_2);
 		Motor_DDR2 |=(1<<Right_Mode_2);
-		
+
 		//Set up Timer 0 for PWM at about 50kHz
 		TCCR0A |= (1<<WGM01)|(1<<WGM00)|(1<<COM0B1);//Fast PWM Mode
 		OCR0B = 15; //Duty ratio currently at max value 0-255
 		TIMSK0 |= (1<<OCIE0B);
 		TCCR0B |= (1<<CS00);//prescalar of 1
-		
+
 		//Set up Timer 1 for Right Motor PWM
 		TCCR1A |= (1<<WGM10)|(1<<WGM11);		//Fast PWM
 		TCCR1B |= ((1<<WGM12)|(1<<WGM13)|(1<<CS10));		// Prescalar = 1
@@ -59,10 +59,10 @@ void inits(void)
 		OCR1A = Right_time_period;
 		OCR1B = Right_duty_cycle;
 
-		
+
 		//Set up Timer 2 as a 1ms clock
 		TCCR2A |= (1<<WGM21);	//CTC Mode
-		OCR2A = 249;		
+		OCR2A = 249;
 		TIMSK2 |= (1<<OCIE2A);
 		TCCR2B |= (1<<CS22);  //64 prescalar */
 /*
@@ -158,7 +158,7 @@ void motorForward()
 
 void initMotors()
 {
-	//motorForward();
+	motorForward();
 	Left_duty_cycle = 0;//Left_time_period/5;
 	Right_duty_cycle = 0;//Right_time_period/5;		//MAX SPEED
 }
