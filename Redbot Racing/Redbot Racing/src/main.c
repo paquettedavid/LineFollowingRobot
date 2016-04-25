@@ -9,7 +9,7 @@ PIDController motorRatioController;
 volatile int controllerTimer = 0.0;
 volatile float motorControllerSetpoint = 450.0;
 volatile float CONTROLLER_GAIN = 0.05;
-volatile float CONTROLLER_INTEGRAL_TIME = 1; //seconds
+volatile float CONTROLLER_INTEGRAL_TIME = 0; //seconds
 volatile float CONTROLLER_DERIVATIVE_TIME = 0; //seconds
 volatile float CONTROLLER_MIN_OUTPUT = -90.0;
 volatile float CONTROLLER_MAX_OUTPUT = 90.0;
@@ -30,7 +30,7 @@ volatile float INITIAL_CONTROLLER_OFFSET = 0.0;
 #define Motor_DDR2 DDRB
 #define Motor_Bank2 PORTB
 // straigt values : L = 150 R = 159
-volatile uint16_t Left_time_period = 2;
+volatile uint16_t Left_time_period = 255;
 volatile uint16_t Left_duty_cycle = 80; // 255 max
 
 volatile uint16_t Right_time_period = 319;
@@ -82,19 +82,11 @@ float readAnalogVoltage(){
 	adcIn |= ( ADCH << 8 );
 	ADCSRA |= (1 << ADSC);
 	while((ADCSRA & (1<<ADSC)));
-	//Serial.println(adcIn);
-	//float voltage = ((1.0*(float)adcIn) / 1024.0) * 5.0;
 	return adcIn;
 }
 
 ISR(TIMER2_COMPA_vect) {
 	controllerTimer++;
-	if(controllerTimer > motorRatioController.samplingPeriod * 1000){
-		PIDControllerComputeOutput(&motorRatioController, readAnalogVoltage());
-		Serial.println(motorRatioController.controllerOutput);
-		setSpeeds(motorRatioController.controllerOutput);
-		controllerTimer = 0;
-	}
 }
 
 void initADC(){
@@ -109,7 +101,7 @@ ISR(TIMER0_COMPB_vect)
 }
 ISR (TIMER1_COMPA_vect)
 {
-	OCR2B = Right_duty_cycle;
+	OCR1B = Right_duty_cycle;
 	Motor_Bank |= (1<<Right_PWM);
 }
 
@@ -118,20 +110,33 @@ ISR (TIMER1_COMPB_vect)
 	Motor_Bank &= ~(1<<Right_PWM);
 }
 
+void setLeftMotorDutyCycle(float dutyCycle){
+	Left_duty_cycle = (int)((float)(Left_time_period*0.6)*(dutyCycle/100.0));
+}
+
+void setRightMotorDutyCycle(float dutyCycle){
+	Right_duty_cycle = (int)((304.0*0.6)*(dutyCycle/100.0));
+}
+
 void setSpeeds(float error)
 {
-	//assuming error -90 to 90 degrees
-	if(error>0)
+	/*
+	// this is brians garbage code
+	if(error > 0)
 	{
-		Left_duty_cycle =  (error/90) * 80;
-		Right_duty_cycle = (((90-error))/90) * 75;//Right_time_period;
+		Left_duty_cycle =  (int)((error/90.0) * (float)Left_time_period);
+		Right_duty_cycle = (int)(((90.0-error)/90.0) * (float)305.0);//Right_time_period);
 	}
-	else if (error<0)
+	else if (error < 0)
 	{
-		Left_duty_cycle = ((90+error)/90) * 80;
-		Right_duty_cycle = (-1*error/90) * 75;//Right_time_period;
-	}
+		Left_duty_cycle = (int)(((90.0+error)/90.0) * (float)Left_time_period);
+		Right_duty_cycle = (int)((-1.0*error/90.0) * (float)305.0);//Right_time_period);
+	}*/
 
+	// this is davids beautiful code
+	// all numbers here are in percentages (0 to 100)
+	setLeftMotorDutyCycle((error/90.0)*50.0+50.0);
+	setRightMotorDutyCycle((-1*error/90)*50.0+50.0);
 }
 
 void stopMotors()
@@ -206,7 +211,14 @@ int main(void)
 	inits();
 	leftForward();
 	rightReverse();
-	while(1);
+	while(1){
+		if(controllerTimer > motorRatioController.samplingPeriod * 1000){
+			PIDControllerComputeOutput(&motorRatioController, readAnalogVoltage());
+			Serial.println(motorRatioController.controllerOutput);
+			setSpeeds(motorRatioController.controllerOutput);
+			controllerTimer = 0;
+		}
+	}
 
 	return 0;
 }
