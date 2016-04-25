@@ -151,9 +151,9 @@ void stopMotors()
 
 void motorForward()
 {
-	Motor_Bank |= (1<<Left_Mode_2)|(1<<Right_Mode_1);	//put both motors in forward mode
-	Motor_Bank &= ~(1<<Left_Mode_1);	//put both motors in forward mode
-	Motor_Bank2 &= ~(1<<Right_Mode_2);
+	Motor_Bank |= (1<<Left_Mode_1)|(1<<Right_Mode_2);	//put both motors in forward mode
+	Motor_Bank &= ~(1<<Left_Mode_2);	//put both motors in forward mode
+	Motor_Bank2 &= ~(1<<Right_Mode_1);
 }
 
 void initMotors()
