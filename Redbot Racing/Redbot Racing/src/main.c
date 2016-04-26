@@ -3,16 +3,17 @@
 #include <avr/io.h> /* Defines pins, ports etc. */
 #include <stdio.h>
 #include "PIDController.h"
+#include "Arduino.h"
 PIDController motorRatioController;
 
 volatile int controllerTimer = 0.0;
 volatile float motorControllerSetpoint = 450.0;
-volatile float CONTROLLER_GAIN = 0.09;
-volatile float CONTROLLER_INTEGRAL_TIME = 1;//0.15; //seconds
-volatile float CONTROLLER_DERIVATIVE_TIME = 0;//-0.9; //seconds
+volatile float CONTROLLER_GAIN = 0.15;
+volatile float CONTROLLER_INTEGRAL_TIME = 0;//0.15; //seconds
+volatile float CONTROLLER_DERIVATIVE_TIME = -0.9; //seconds
 volatile float CONTROLLER_MIN_OUTPUT = -90.0;
 volatile float CONTROLLER_MAX_OUTPUT = 90.0;
-volatile float CONTROLLER_SAMPLING_PERIOD = 0.001;
+volatile float CONTROLLER_SAMPLING_PERIOD = 0.000001;
 volatile float INITIAL_CONTROLLER_OFFSET = 0.0;
 
 #define Left_PWM 5
@@ -62,10 +63,11 @@ void inits(void)
 
 		//Set up Timer 2 as a 1us clock
 		TCCR2A |= (1<<WGM21);	//CTC Mode
-		OCR2A = 249;//16;
+		OCR2A = 16;
 		TIMSK2 |= (1<<OCIE2A);
-		TCCR2B |= (1<<CS22);  //1 prescalar */
-
+		TCCR2B |= (1<<CS20);  //1 prescalar */
+	
+		Serial.begin(9600);
 		initADC();
 		motorRatioController = PIDControllerCreate(motorControllerSetpoint,
 		CONTROLLER_GAIN, CONTROLLER_INTEGRAL_TIME, CONTROLLER_DERIVATIVE_TIME,
@@ -91,7 +93,7 @@ ISR(TIMER2_COMPA_vect) {
 void initADC(){
 	//init the A to D converter
 	ADMUX |= (1<<MUX1)|(1<<MUX2) |(1<< REFS0);
-	ADCSRA = (1<<ADEN) | (1<<ADPS0);
+	ADCSRA = (1<<ADEN) | (1<<ADPS2) | (1<<ADPS1) | (1<<ADPS0);
 }
 
 ISR(TIMER0_COMPB_vect)
@@ -110,11 +112,11 @@ ISR (TIMER1_COMPB_vect)
 }
 
 void setLeftMotorDutyCycle(float dutyCycle){
-	Left_duty_cycle = (int)((float)(Left_time_period*.6)*(dutyCycle/100.0));
+	Left_duty_cycle = (int)((float)(Left_time_period)*(dutyCycle/100.0));
 }
 
 void setRightMotorDutyCycle(float dutyCycle){
-	Right_duty_cycle = (int)((304.0)*(dutyCycle*.6/100.0));
+	Right_duty_cycle = (int)((304.0)*(dutyCycle/100.0));
 }
 
 void setSpeeds(float error)
@@ -211,8 +213,9 @@ int main(void)
 	leftForward();
 	rightReverse();
 	while(1){
-		if(controllerTimer > motorRatioController.samplingPeriod * 1000){
+		if(controllerTimer > motorRatioController.samplingPeriod * 1000000){
 			PIDControllerComputeOutput(&motorRatioController, readAnalogVoltage());
+			Serial.println(motorRatioController.controllerOutput);
 			setSpeeds(motorRatioController.controllerOutput);
 			controllerTimer = 0;
 		}
