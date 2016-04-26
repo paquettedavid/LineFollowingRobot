@@ -41,7 +41,9 @@ volatile uint16_t Left_duty_cycle = 80; // 255 max
 volatile uint16_t Right_time_period = 319;
 volatile uint16_t Right_duty_cycle = 120;	//0-317 (Highest Duty Ratio)
 
-volatile float turnRatio = 55.0;
+#define TURN_POWER 55.0 //40 for line, 55 for arbitrary path
+
+volatile float turnRatio = TURN_POWER;
 
 void InitTimer1();
 void initADC();
@@ -193,11 +195,11 @@ void setSpeeds(float error)
 			turnRatio-=0.05;
 		}
 	} else if(abs(error) < 20){
-		if(turnRatio<55) {
+		if(turnRatio<TURN_POWER) {
 			turnRatio+=0.10;
 		}
 	} else {
-		turnRatio = 55;
+		turnRatio = TURN_POWER;
 	}
 
 
