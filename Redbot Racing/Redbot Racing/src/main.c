@@ -8,7 +8,7 @@ PIDController motorRatioController;
 
 volatile int controllerTimer = 0.0;
 volatile float motorControllerSetpoint = 450.0;
-volatile float CONTROLLER_GAIN = 0.08;
+volatile float CONTROLLER_GAIN = 0.07;
 volatile float CONTROLLER_INTEGRAL_TIME = 0;//0.15; //seconds
 volatile float CONTROLLER_DERIVATIVE_TIME = 0; //seconds
 volatile float CONTROLLER_MIN_OUTPUT = -90.0;
@@ -41,7 +41,7 @@ volatile uint16_t Left_duty_cycle = 80; // 255 max
 volatile uint16_t Right_time_period = 319;
 volatile uint16_t Right_duty_cycle = 120;	//0-317 (Highest Duty Ratio)
 
-volatile float turnRatio = 50.0;
+volatile float turnRatio = 55.0;
 
 void InitTimer1();
 void initADC();
@@ -193,11 +193,11 @@ void setSpeeds(float error)
 			turnRatio-=0.05;
 		}
 	} else if(abs(error) < 20){
-		if(turnRatio<50) {
+		if(turnRatio<55) {
 			turnRatio+=0.10;
 		}
 	} else {
-		turnRatio = 50;
+		turnRatio = 55;
 	}
 
 
