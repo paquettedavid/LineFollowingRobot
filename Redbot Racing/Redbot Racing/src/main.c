@@ -13,7 +13,7 @@ volatile float CONTROLLER_INTEGRAL_TIME = 0;//0.15; //seconds
 volatile float CONTROLLER_DERIVATIVE_TIME = -0.9; //seconds
 volatile float CONTROLLER_MIN_OUTPUT = -90.0;
 volatile float CONTROLLER_MAX_OUTPUT = 90.0;
-volatile float CONTROLLER_SAMPLING_PERIOD = 0.000001;
+volatile float CONTROLLER_SAMPLING_PERIOD = 0.001;
 volatile float INITIAL_CONTROLLER_OFFSET = 0.0;
 
 #define Left_PWM 5
@@ -61,12 +61,11 @@ void inits(void)
 		OCR1B = Right_duty_cycle;
 
 
-		//Set up Timer 2 as a 1us clock
+		//Set up Timer 2 as a 1ms clock
 		TCCR2A |= (1<<WGM21);	//CTC Mode
-		OCR2A = 16;
+		OCR2A = 249;
 		TIMSK2 |= (1<<OCIE2A);
-		TCCR2B |= (1<<CS20);  //1 prescalar */
-	
+		TCCR2B |= (1<<CS22);  //64 prescalar */
 		Serial.begin(9600);
 		initADC();
 		motorRatioController = PIDControllerCreate(motorControllerSetpoint,
@@ -213,7 +212,7 @@ int main(void)
 	leftForward();
 	rightReverse();
 	while(1){
-		if(controllerTimer > motorRatioController.samplingPeriod * 1000000){
+		if(controllerTimer > motorRatioController.samplingPeriod * 1000){
 			PIDControllerComputeOutput(&motorRatioController, readAnalogVoltage());
 			Serial.println(motorRatioController.controllerOutput);
 			setSpeeds(motorRatioController.controllerOutput);
