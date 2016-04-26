@@ -41,6 +41,16 @@ void InitTimer1();
 void initADC();
 void setSpeeds(float error);
 
+#define IR_m (1<<MUX1)|(1<<MUX2)|(1<<REFS0)
+#define IR_l (1<<MUX1)|(1<<REFS0)
+#define IR_r (1<<MUX0)|(1<<MUX1)|(1<<REFS0)
+
+uint8_t ADC_Mode |= IR_m;
+volatile uint16_t LeftSensor;
+volatile uint16_t RightSensor;
+
+
+
 void inits(void)
 {
 		//Set up Data Direction Registers
@@ -78,10 +88,23 @@ void inits(void)
 }
 
 float readAnalogVoltage(){
+	ADMUX |= IR_m;
 	int adcIn = (ADCL);
 	adcIn |= ( ADCH << 8 );
 	ADCSRA |= (1 << ADSC);
 	while((ADCSRA & (1<<ADSC)));
+	
+	ADMUX|= IR_l;
+	ADCSRA |= (1 << ADSC);
+	while((ADCSRA & (1<<ADSC)));
+	LeftSensor = (ADCL);
+	LeftSensor |= ( ADCH << 8 );
+	
+	ADMUX|= IR_r;
+	ADCSRA |= (1 << ADSC);
+	while((ADCSRA & (1<<ADSC)));
+	RightSensor = (ADCL);
+	RightSensor |= ( ADCH << 8 );
 	return adcIn;
 }
 
