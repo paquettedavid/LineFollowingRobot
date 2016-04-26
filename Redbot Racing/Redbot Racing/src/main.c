@@ -8,9 +8,9 @@ PIDController motorRatioController;
 
 volatile int controllerTimer = 0.0;
 volatile float motorControllerSetpoint = 450.0;
-volatile float CONTROLLER_GAIN = 0.15;
+volatile float CONTROLLER_GAIN = 0.03;
 volatile float CONTROLLER_INTEGRAL_TIME = 0;//0.15; //seconds
-volatile float CONTROLLER_DERIVATIVE_TIME = -0.9; //seconds
+volatile float CONTROLLER_DERIVATIVE_TIME = 0; //seconds
 volatile float CONTROLLER_MIN_OUTPUT = -90.0;
 volatile float CONTROLLER_MAX_OUTPUT = 90.0;
 volatile float CONTROLLER_SAMPLING_PERIOD = 0.001;
@@ -36,7 +36,7 @@ volatile uint16_t Left_duty_cycle = 80; // 255 max
 volatile uint16_t Right_time_period = 319;
 volatile uint16_t Right_duty_cycle = 120;	//0-317 (Highest Duty Ratio)
 
-
+volatile float turnRatio = 70.0;
 void InitTimer1();
 void initADC();
 void setSpeeds(float error);
@@ -92,7 +92,7 @@ ISR(TIMER2_COMPA_vect) {
 void initADC(){
 	//init the A to D converter
 	ADMUX |= (1<<MUX1)|(1<<MUX2) |(1<< REFS0);
-	ADCSRA = (1<<ADEN) | (1<<ADPS2) | (1<<ADPS1) | (1<<ADPS0);
+	ADCSRA = (1<<ADEN) | (1<<ADPS1);
 }
 
 ISR(TIMER0_COMPB_vect)
@@ -135,8 +135,23 @@ void setSpeeds(float error)
 
 	// this is davids beautiful code
 	// all numbers here are in percentages (0 to 100)
-	setLeftMotorDutyCycle((error/90.0)*50.0+50.0);
-	setRightMotorDutyCycle((-1*error/90)*50.0+50.0);
+
+	/*if(abs(error) < 20){
+		turnRatio = 100 - error*(3.0/2.0);
+	} else {
+		turnRatio = 70;
+	}*/
+	if(abs(error) < 10){
+		if(turnRatio>0){
+			turnRatio-=0.005;
+		}
+	} else {
+		turnRatio = 70;
+	}
+
+
+	setLeftMotorDutyCycle((error/90.0)*turnRatio+(100.0-turnRatio));
+	setRightMotorDutyCycle((-1*error/90)*turnRatio+(100.0-turnRatio));
 }
 
 void stopMotors()
@@ -214,7 +229,6 @@ int main(void)
 	while(1){
 		if(controllerTimer > motorRatioController.samplingPeriod * 1000){
 			PIDControllerComputeOutput(&motorRatioController, readAnalogVoltage());
-			Serial.println(motorRatioController.controllerOutput);
 			setSpeeds(motorRatioController.controllerOutput);
 			controllerTimer = 0;
 		}
