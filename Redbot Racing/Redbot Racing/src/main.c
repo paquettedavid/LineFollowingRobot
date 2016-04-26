@@ -8,7 +8,7 @@ PIDController motorRatioController;
 
 volatile int controllerTimer = 0.0;
 volatile float motorControllerSetpoint = 450.0;
-volatile float CONTROLLER_GAIN = 0.07;
+volatile float CONTROLLER_GAIN = 0.07; // 0.07 for good line tracking at 0.55 turn ratio power
 volatile float CONTROLLER_INTEGRAL_TIME = 0;//0.15; //seconds
 volatile float CONTROLLER_DERIVATIVE_TIME = 0; //seconds
 volatile float CONTROLLER_MIN_OUTPUT = -90.0;
@@ -89,8 +89,6 @@ void inits(void)
 		CONTROLLER_MIN_OUTPUT,CONTROLLER_MAX_OUTPUT, CONTROLLER_SAMPLING_PERIOD,
 		INITIAL_CONTROLLER_OFFSET);
 		sei();
-
-
 }
 
 ISR( ADC_vect ) {
@@ -169,27 +167,6 @@ void setRightMotorDutyCycle(float dutyCycle){
 
 void setSpeeds(float error)
 {
-	/*
-	// this is brians garbage code
-	if(error > 0)
-	{
-		Left_duty_cycle =  (int)((error/90.0) * (float)Left_time_period);
-		Right_duty_cycle = (int)(((90.0-error)/90.0) * (float)305.0);//Right_time_period);
-	}
-	else if (error < 0)
-	{
-		Left_duty_cycle = (int)(((90.0+error)/90.0) * (float)Left_time_period);
-		Right_duty_cycle = (int)((-1.0*error/90.0) * (float)305.0);//Right_time_period);
-	}*/
-
-	// this is davids beautiful code
-	// all numbers here are in percentages (0 to 100)
-
-	/*if(abs(error) < 20){
-		turnRatio = 100 - error*(3.0/2.0);
-	} else {
-		turnRatio = 70;
-	}*/
 	if(abs(error) < 11.2){
 		if(turnRatio>0){
 			turnRatio-=0.05;
@@ -201,8 +178,6 @@ void setSpeeds(float error)
 	} else {
 		turnRatio = TURN_POWER;
 	}
-
-
 	setLeftMotorDutyCycle(((direction)*-1*error/90.0)*turnRatio+(100.0-turnRatio));
 	setRightMotorDutyCycle(direction*(error/90)*turnRatio+(100.0-turnRatio));
 }
@@ -289,6 +264,5 @@ int main(void)
 			controllerTimer = 0;
 		}
 	}
-
 	return 0;
 }
