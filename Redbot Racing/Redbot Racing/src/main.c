@@ -3,21 +3,26 @@
 #include <avr/io.h> /* Defines pins, ports etc. */
 #include <stdio.h>
 #include "PIDController.h"
-#include "Arduino.h"
+#include <stdlib.h>
 PIDController motorRatioController;
 
 volatile int controllerTimer = 0.0;
 volatile float motorControllerSetpoint = 450.0;
-volatile float CONTROLLER_GAIN = 0.03;
+volatile float CONTROLLER_GAIN = 0.06;
 volatile float CONTROLLER_INTEGRAL_TIME = 0;//0.15; //seconds
 volatile float CONTROLLER_DERIVATIVE_TIME = 0; //seconds
 volatile float CONTROLLER_MIN_OUTPUT = -90.0;
 volatile float CONTROLLER_MAX_OUTPUT = 90.0;
 volatile float CONTROLLER_SAMPLING_PERIOD = 0.001;
 volatile float INITIAL_CONTROLLER_OFFSET = 0.0;
-
+volatile float direction = -1;
 #define Left_PWM 5
 #define Right_PWM 6
+
+#define MIDDLE_SENSOR 0
+#define LEFT_SENSOR 1
+#define RIGHT_SENSOR 2
+
 
 #define Left_Mode_1 2
 #define Right_Mode_1 7
@@ -36,7 +41,8 @@ volatile uint16_t Left_duty_cycle = 80; // 255 max
 volatile uint16_t Right_time_period = 319;
 volatile uint16_t Right_duty_cycle = 120;	//0-317 (Highest Duty Ratio)
 
-volatile float turnRatio = 70.0;
+volatile float turnRatio = 60.0;
+
 void InitTimer1();
 void initADC();
 void setSpeeds(float error);
@@ -45,11 +51,10 @@ void setSpeeds(float error);
 #define IR_l (1<<MUX1)|(1<<REFS0)
 #define IR_r (1<<MUX0)|(1<<MUX1)|(1<<REFS0)
 
-uint8_t ADC_Mode |= IR_m;
 volatile uint16_t LeftSensor;
 volatile uint16_t RightSensor;
 
-
+volatile int adcChannel = 0;
 
 void inits(void)
 {
@@ -76,7 +81,6 @@ void inits(void)
 		OCR2A = 249;
 		TIMSK2 |= (1<<OCIE2A);
 		TCCR2B |= (1<<CS22);  //64 prescalar */
-		Serial.begin(9600);
 		initADC();
 		motorRatioController = PIDControllerCreate(motorControllerSetpoint,
 		CONTROLLER_GAIN, CONTROLLER_INTEGRAL_TIME, CONTROLLER_DERIVATIVE_TIME,
@@ -87,24 +91,44 @@ void inits(void)
 
 }
 
+ISR( ADC_vect ) {
+	switch(adcChannel){
+		case MIDDLE_SENSOR:
+			ADMUX = 0;
+			ADMUX |= IR_l;
+			adcChannel = LEFT_SENSOR;
+			break;
+		case LEFT_SENSOR:
+			ADMUX = 0;
+			ADMUX|= IR_r;
+			adcChannel = RIGHT_SENSOR;
+			break;
+		case RIGHT_SENSOR:
+			ADMUX = 0;
+			ADMUX|= IR_m;
+			adcChannel = MIDDLE_SENSOR;
+			break;
+	}
+}
+
 float readAnalogVoltage(){
-	ADMUX |= IR_m;
+
+	ADCSRA |= (1 << ADSC);
+	while((ADCSRA & (1<<ADSC)));
 	int adcIn = (ADCL);
 	adcIn |= ( ADCH << 8 );
-	ADCSRA |= (1 << ADSC);
-	while((ADCSRA & (1<<ADSC)));
-	
-	ADMUX|= IR_l;
-	ADCSRA |= (1 << ADSC);
-	while((ADCSRA & (1<<ADSC)));
-	LeftSensor = (ADCL);
-	LeftSensor |= ( ADCH << 8 );
-	
-	ADMUX|= IR_r;
+
 	ADCSRA |= (1 << ADSC);
 	while((ADCSRA & (1<<ADSC)));
 	RightSensor = (ADCL);
 	RightSensor |= ( ADCH << 8 );
+
+
+	ADCSRA |= (1 << ADSC);
+	while((ADCSRA & (1<<ADSC)));
+	LeftSensor = (ADCL);
+	LeftSensor |= ( ADCH << 8 );
+
 	return adcIn;
 }
 
@@ -115,7 +139,7 @@ ISR(TIMER2_COMPA_vect) {
 void initADC(){
 	//init the A to D converter
 	ADMUX |= (1<<MUX1)|(1<<MUX2) |(1<< REFS0);
-	ADCSRA = (1<<ADEN) | (1<<ADPS1);
+	ADCSRA = (1<<ADEN) | (1<<ADPS1)|(1<<ADIE);
 }
 
 ISR(TIMER0_COMPB_vect)
@@ -164,17 +188,21 @@ void setSpeeds(float error)
 	} else {
 		turnRatio = 70;
 	}*/
-	if(abs(error) < 10){
+	if(abs(error) < 11.2){
 		if(turnRatio>0){
-			turnRatio-=0.005;
+			turnRatio-=0.05;
+		}
+	} else if(abs(error) < 20){
+		if(turnRatio<60) {
+			turnRatio+=0.10;
 		}
 	} else {
-		turnRatio = 70;
+		turnRatio = 60;
 	}
 
 
-	setLeftMotorDutyCycle((error/90.0)*turnRatio+(100.0-turnRatio));
-	setRightMotorDutyCycle((-1*error/90)*turnRatio+(100.0-turnRatio));
+	setLeftMotorDutyCycle(((direction)*-1*error/90.0)*turnRatio+(100.0-turnRatio));
+	setRightMotorDutyCycle(direction*(error/90)*turnRatio+(100.0-turnRatio));
 }
 
 void stopMotors()
@@ -251,7 +279,10 @@ int main(void)
 	rightReverse();
 	while(1){
 		if(controllerTimer > motorRatioController.samplingPeriod * 1000){
-			PIDControllerComputeOutput(&motorRatioController, readAnalogVoltage());
+			float middleSensorValue = readAnalogVoltage();
+			if(direction > 0 && LeftSensor > 700) direction *= -1;
+			if(direction < 0 && RightSensor > 700) direction *= -1;
+			PIDControllerComputeOutput(&motorRatioController, middleSensorValue);
 			setSpeeds(motorRatioController.controllerOutput);
 			controllerTimer = 0;
 		}
