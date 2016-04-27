@@ -1,0 +1,19 @@
+\BOOKMARK [1][-]{section.1}{Objective}{}% 1
+\BOOKMARK [1][-]{section.2}{Control Design}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{Control Overview}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{PID Controller Implementation}{section.2}% 4
+\BOOKMARK [2][-]{subsection.2.3}{Path Correction}{section.2}% 5
+\BOOKMARK [2][-]{subsection.2.4}{Straight Line Detection and Acceleration}{section.2}% 6
+\BOOKMARK [2][-]{subsection.2.5}{Controller Tuning}{section.2}% 7
+\BOOKMARK [1][-]{section.3}{Sensor Overview}{}% 8
+\BOOKMARK [2][-]{subsection.3.1}{ADC Initialization}{section.3}% 9
+\BOOKMARK [2][-]{subsection.3.2}{ADC Channel Switching}{section.3}% 10
+\BOOKMARK [2][-]{subsection.3.3}{Reading from the ADC}{section.3}% 11
+\BOOKMARK [1][-]{section.4}{PWM and Motor Control}{}% 12
+\BOOKMARK [2][-]{subsection.4.1}{PWM Initialization}{section.4}% 13
+\BOOKMARK [2][-]{subsection.4.2}{Motor Control}{section.4}% 14
+\BOOKMARK [1][-]{section.5}{Conclusions}{}% 15
+\BOOKMARK [1][-]{section.6}{Complete Source Code}{}% 16
+\BOOKMARK [2][-]{subsection.6.1}{main.c}{section.6}% 17
+\BOOKMARK [2][-]{subsection.6.2}{PIDController.c}{section.6}% 18
+\BOOKMARK [2][-]{subsection.6.3}{PIDController.h}{section.6}% 19
