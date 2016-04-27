@@ -232,6 +232,7 @@ Timer 0 is configured to produce a 50kHz PWM signal to OC0B.  The duty ratio can
 
 \end{lstlisting}
 \textbf{Code sample 7.} (main.c) PWM inits.
+\subsection{PWM Modulation}
 \begin{lstlisting}
 ISR(TIMER0_COMPB_vect)
 {
@@ -249,7 +250,7 @@ ISR (TIMER1_COMPB_vect)
 }
 \end{lstlisting}
 \textbf{Code sample 8.} (main.c) PWM modulation. \\\\
-These ISRs are used to update the duty ratio for each PWM signal and toggle the desired pin to drive the motors.
+These ISRs are used to update the duty ratio for each PWM signal and toggle the desired pin to drive the motors. \\\\
 \subsection{Motor Control}
 \begin{lstlisting}
 void stopMotors()
@@ -323,10 +324,10 @@ void Reverse()
 \textbf{Code sample 9.} (main.c) Motor direction control.
 \\\\
 While most of these methods are not used in this source code, they simplify the process of changing the motor modes.  These methods simply set the control pins for each motor properly to put each motor in the desired state.
-
+\\\\
 \section{Conclusions}
 While our design did follow the lines as intended, it could have handled some of the sharper turns better and the straightaway algorithm could have been optimized.  If we had more time, we would have tried to perhaps reverse one wheel when turning to allow for better handling.  In addition, we would have tried to use the encoders for the straightaway with a simple controller to keep the angular velocities equal.  This would allow the Redbot to travel straight as fast as possible in a straight line.
-
+\\\\
 \section{Complete Source Code}
 \subsection{main.c}
 \begin{lstlisting}
